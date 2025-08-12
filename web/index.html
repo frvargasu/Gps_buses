@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>GPS Buses - Transporte Público</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background-color: #f5f5f5;
+      overflow: hidden;
+    }
+    
+    #root {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    /* Leaflet CSS - copied essential styles */
+    .leaflet-container {
+      height: 100%;
+      width: 100%;
+      position: relative;
+      outline: 0;
+    }
+    
+    .leaflet-map-pane,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow,
+    .leaflet-tile-container,
+    .leaflet-pane > svg,
+    .leaflet-pane > canvas,
+    .leaflet-zoom-box,
+    .leaflet-image-layer,
+    .leaflet-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    
+    .leaflet-container {
+      overflow: hidden;
+    }
+    
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow {
+      display: block;
+    }
+    
+    .leaflet-container .leaflet-overlay-pane svg,
+    .leaflet-container .leaflet-marker-pane img,
+    .leaflet-container .leaflet-shadow-pane img,
+    .leaflet-container .leaflet-tile-pane img,
+    .leaflet-container img.leaflet-image-layer,
+    .leaflet-container .leaflet-tile {
+      max-width: none !important;
+      max-height: none !important;
+    }
+    
+    .leaflet-container.leaflet-touch-zoom {
+      -ms-touch-action: pan-x pan-y;
+      touch-action: pan-x pan-y;
+    }
+    
+    .leaflet-container.leaflet-touch-drag {
+      -ms-touch-action: pinch-zoom;
+      touch-action: none;
+      touch-action: pinch-zoom;
+    }
+    
+    .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+      -ms-touch-action: none;
+      touch-action: none;
+    }
+    
+    .leaflet-container {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .leaflet-container a {
+      -webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+    }
+    
+    .leaflet-tile {
+      filter: inherit;
+      visibility: hidden;
+    }
+    
+    .leaflet-tile-loaded {
+      visibility: inherit;
+    }
+    
+    .leaflet-zoom-box {
+      width: 0;
+      height: 0;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      z-index: 800;
+    }
+    
+    .leaflet-overlay-pane svg {
+      -moz-user-select: none;
+    }
+    
+    .leaflet-pane {
+      z-index: 400;
+    }
+    
+    .leaflet-tile-pane {
+      z-index: 200;
+    }
+    
+    .leaflet-overlay-pane {
+      z-index: 400;
+    }
+    
+    .leaflet-shadow-pane {
+      z-index: 500;
+    }
+    
+    .leaflet-marker-pane {
+      z-index: 600;
+    }
+    
+    .leaflet-tooltip-pane {
+      z-index: 650;
+    }
+    
+    .leaflet-popup-pane {
+      z-index: 700;
+    }
+    
+    .leaflet-map-pane canvas {
+      z-index: 100;
+    }
+    
+    .leaflet-map-pane svg {
+      z-index: 200;
+    }
+    
+    .leaflet-vml-shape {
+      width: 1px;
+      height: 1px;
+    }
+    
+    .lvml {
+      behavior: url(#default#VML);
+      display: inline-block;
+      position: absolute;
+    }
+    
+    /* Popup styles */
+    .leaflet-popup {
+      position: absolute;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .leaflet-popup-content-wrapper {
+      padding: 1px;
+      text-align: left;
+      border-radius: 12px;
+      background-color: white;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+    }
+    
+    .leaflet-popup-content {
+      margin: 13px 19px;
+      line-height: 1.4;
+    }
+    
+    .leaflet-popup-content p {
+      margin: 18px 0;
+    }
+    
+    .leaflet-popup-tip-container {
+      width: 40px;
+      height: 20px;
+      position: absolute;
+      left: 50%;
+      margin-left: -20px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    
+    .leaflet-popup-tip {
+      width: 17px;
+      height: 17px;
+      padding: 1px;
+      margin: -10px auto 0;
+      -webkit-transform: rotate(45deg);
+      -moz-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+      transform: rotate(45deg);
+      background: white;
+      border: 1px solid #ccc;
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+</html>

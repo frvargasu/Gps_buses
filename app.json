@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "GPS Buses - Transporte Público",
+    "slug": "gpsbus",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2E4BC6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gpsbus.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Esta app necesita acceso a tu ubicación para mostrarte las paradas de bus cercanas y rutas en tiempo real."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2E4BC6"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.gpsbus.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GPSBus to use your location to show nearby bus stops and routes."
+        }
+      ]
+    ]
+  }
+}
