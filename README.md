@@ -1,6 +1,6 @@
 # GPSBus - Aplicación de Transporte Público
 
-Una aplicación híbrida de transporte público similar a Millantour, desarrollada con React Native y Expo que funciona en web, Android e iOS.
+Una aplicación híbrida de transporte público, desarrollada con React Native y Expo que funciona en web, Android e iOS.
 
 ## 🚀 Características
 
