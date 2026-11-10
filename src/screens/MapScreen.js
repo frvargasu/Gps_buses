@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { busStops } from '../data/mockData';
 import TransitMap from '../components/TransitMap';
+import { COLORS } from '../constants';
 
 const normalizeSearchText = (value) =>
   value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -73,7 +74,7 @@ export default function MapScreen({ route }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f7f8fa" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       <View style={styles.header}>
         <View>
@@ -81,7 +82,7 @@ export default function MapScreen({ route }) {
           <Text style={styles.title}>Mapa de paradas</Text>
         </View>
         <View style={styles.openStreetMapBadge}>
-          <Ionicons name="leaf-outline" size={16} color="#26734d" />
+          <Ionicons name="leaf-outline" size={16} color={COLORS.primary} />
           <Text style={styles.openStreetMapText}>OpenStreetMap</Text>
         </View>
       </View>
@@ -92,7 +93,7 @@ export default function MapScreen({ route }) {
           accessibilityLabel="Buscar paradas o recorridos"
           style={styles.searchInput}
           placeholder="Buscar parada o recorrido"
-          placeholderTextColor="#8b9099"
+          placeholderTextColor={COLORS.textLight}
           value={searchQuery}
           onChangeText={setSearchQuery}
           returnKeyType="search"
@@ -103,7 +104,7 @@ export default function MapScreen({ route }) {
             accessibilityLabel="Limpiar búsqueda"
             onPress={() => setSearchQuery('')}
           >
-            <Ionicons name="close-circle" size={20} color="#8b9099" />
+            <Ionicons name="close-circle" size={20} color={COLORS.textLight} />
           </TouchableOpacity>
         )}
       </View>
@@ -154,7 +155,7 @@ export default function MapScreen({ route }) {
       >
         {visibleStops.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={24} color="#8b9099" />
+            <Ionicons name="search-outline" size={24} color={COLORS.textLight} />
             <Text style={styles.emptyStateText}>No encontramos paradas con esa búsqueda.</Text>
           </View>
         ) : (
@@ -169,7 +170,7 @@ export default function MapScreen({ route }) {
                   onPress={() => setSelectedStop(stop)}
                 >
                   <View style={styles.stopIcon}>
-                    <Ionicons name="bus" size={18} color="#26734d" />
+                    <Ionicons name="bus" size={18} color={COLORS.primary} />
                   </View>
                   <View style={styles.stopInfo}>
                     <Text style={styles.stopName}>{stop.name}</Text>
@@ -185,7 +186,7 @@ export default function MapScreen({ route }) {
                   style={styles.directionsButton}
                   onPress={() => handleOpenDirections(stop)}
                 >
-                  <Ionicons name="navigate-outline" size={19} color="#26734d" />
+                  <Ionicons name="navigate-outline" size={19} color={COLORS.primary} />
                 </TouchableOpacity>
               </View>
             );
@@ -203,7 +204,7 @@ export default function MapScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f8fa',
+    backgroundColor: COLORS.background,
   },
   header: {
     minHeight: 68,
@@ -214,14 +215,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   eyebrow: {
-    color: '#26734d',
+    color: COLORS.primary,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
   },
   title: {
     marginTop: 3,
-    color: '#17231d',
+    color: COLORS.text,
     fontSize: 21,
     fontWeight: '700',
   },
@@ -232,10 +233,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 7,
     borderRadius: 16,
-    backgroundColor: '#e5f1e9',
+    backgroundColor: COLORS.primaryLight,
   },
   openStreetMapText: {
-    color: '#26734d',
+    color: COLORS.primary,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -248,14 +249,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e0e4e8',
+    borderColor: COLORS.border,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
   searchInput: {
     flex: 1,
     height: '100%',
-    color: '#17231d',
+    color: COLORS.text,
     fontSize: 14,
     outlineStyle: 'none',
   },
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 9,
     paddingLeft: 12,
     borderRadius: 9,
-    backgroundColor: '#26734d',
+    backgroundColor: COLORS.primary,
   },
   routeBannerText: {
     flex: 1,
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#dce2dc',
+    borderColor: COLORS.border,
     borderRadius: 14,
     backgroundColor: '#e8eee8',
   },
@@ -298,17 +299,17 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   listTitle: {
-    color: '#17231d',
+    color: COLORS.text,
     fontSize: 15,
     fontWeight: '700',
   },
   listSubtitle: {
     marginTop: 2,
-    color: '#737b77',
+    color: COLORS.textSecondary,
     fontSize: 11,
   },
   approximateNote: {
-    color: '#737b77',
+    color: COLORS.textSecondary,
     fontSize: 10,
   },
   stopsList: {
@@ -325,13 +326,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e5e8e5',
+    borderColor: COLORS.border,
     borderRadius: 11,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
   selectedStopCard: {
-    borderColor: '#26734d',
-    backgroundColor: '#f3f8f4',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
   stopMain: {
     flex: 1,
@@ -346,24 +347,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 10,
     borderRadius: 10,
-    backgroundColor: '#e5f1e9',
+    backgroundColor: COLORS.primaryLight,
   },
   stopInfo: {
     flex: 1,
   },
   stopName: {
-    color: '#17231d',
+    color: COLORS.text,
     fontSize: 13,
     fontWeight: '700',
   },
   stopRoutes: {
     marginTop: 2,
-    color: '#59645d',
+    color: COLORS.textSecondary,
     fontSize: 11,
   },
   stopCoordinates: {
     marginTop: 2,
-    color: '#8b9099',
+    color: COLORS.textLight,
     fontSize: 10,
   },
   directionsButton: {
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
     height: 44,
     marginRight: 8,
     borderRadius: 12,
-    backgroundColor: '#e5f1e9',
+    backgroundColor: COLORS.primaryLight,
   },
   emptyState: {
     minHeight: 80,
@@ -384,14 +385,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   emptyStateText: {
-    color: '#737b77',
+    color: COLORS.textSecondary,
     fontSize: 12,
   },
   attribution: {
     paddingHorizontal: 16,
     paddingTop: 5,
     paddingBottom: 7,
-    color: '#737b77',
+    color: COLORS.textSecondary,
     fontSize: 9,
     textAlign: 'center',
   },

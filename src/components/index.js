@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants';
 
 export const Card = ({ children, style, onPress }) => (
   <TouchableOpacity 
@@ -30,13 +31,13 @@ export const RouteCard = ({ route, onPress }) => (
         </Text>
         <View style={styles.statusContainer}>
           <Text style={styles.statusLabel}>ESTADO: </Text>
-          <Text style={[styles.statusValue, { color: '#4CAF50' }]}>
+          <Text style={[styles.statusValue, { color: COLORS.success }]}>
             {route.status}
           </Text>
         </View>
       </View>
       <TouchableOpacity style={styles.locationButton}>
-        <Ionicons name="location" size={24} color="#2E4BC6" />
+        <Ionicons name="location" size={24} color={COLORS.primary} />
       </TouchableOpacity>
     </View>
     
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   },
   routeCard: {
     borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: COLORS.success,
   },
   routeHeader: {
     flexDirection: 'row',
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   busIconContainer: {
-    backgroundColor: '#2E4BC6',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     padding: 12,
     marginRight: 16,
@@ -128,10 +129,10 @@ const styles = StyleSheet.create({
   busText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2E4BC6',
+    color: COLORS.primary,
   },
   button: {
-    backgroundColor: '#2E4BC6',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 20,

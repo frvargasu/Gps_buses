@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants';
 
 const defaultRegion = {
   latitude: -33.4489,
@@ -79,7 +80,7 @@ export default function TransitMap({
         {routePoints.length > 1 && (
           <Polyline
             coordinates={routePoints}
-            strokeColor="#26734d"
+            strokeColor={COLORS.primary}
             strokeWidth={5}
           />
         )}
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
     borderRadius: 18,
-    backgroundColor: '#26734d',
+    backgroundColor: COLORS.primary,
     elevation: 4,
   },
   routeBadge: {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#26734d',
+    backgroundColor: COLORS.primary,
   },
   routeBadgeText: {
     color: '#fff',

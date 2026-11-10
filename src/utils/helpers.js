@@ -1,4 +1,5 @@
 // Utility functions for the GPSBus app
+import { COLORS } from '../constants';
 
 export const formatTime = (timeString) => {
   const time = new Date(`2000-01-01T${timeString}`);
@@ -8,15 +9,15 @@ export const formatTime = (timeString) => {
 export const getStatusColor = (status) => {
   switch (status.toLowerCase()) {
     case 'iniciado':
-      return '#4CAF50';
+      return COLORS.success;
     case 'en_ruta':
-      return '#FF9800';
+      return COLORS.warning;
     case 'terminado':
       return '#9E9E9E';
     case 'cancelado':
-      return '#F44336';
+      return COLORS.error;
     default:
-      return '#2E4BC6';
+      return COLORS.primary;
   }
 };
 

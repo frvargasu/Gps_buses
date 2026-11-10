@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import L from 'leaflet';
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
+import { COLORS } from '../constants';
 import 'leaflet/dist/leaflet.css';
 import './TransitMap.web.css';
 
@@ -54,7 +55,10 @@ export default function TransitMap({
         />
         <MapCamera points={points} selectedStop={selectedStop} />
         {points.length > 1 && (
-          <Polyline positions={points} pathOptions={{ color: '#26734d', weight: 5, opacity: 0.8 }} />
+          <Polyline
+            positions={points}
+            pathOptions={{ color: COLORS.primary, weight: 5, opacity: 0.8 }}
+          />
         )}
         {busStops.map((stop) => (
           <Marker
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#26734d',
+    backgroundColor: COLORS.primary,
   },
   routeBadgeText: {
     color: '#fff',

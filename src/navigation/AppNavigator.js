@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
@@ -22,7 +23,7 @@ function RoutesStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#2E4BC6',
+          backgroundColor: COLORS.primaryDark,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -33,22 +34,22 @@ function RoutesStack() {
       <Stack.Screen 
         name="Home" 
         component={HomeScreen} 
-        options={{ title: 'GPS Buses' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="Division" 
         component={DivisionScreen} 
-        options={{ title: 'Seleccione división para ver servicios' }}
+        options={{ title: 'División' }}
       />
       <Stack.Screen 
         name="ServiceType" 
         component={ServiceTypeScreen} 
-        options={{ title: 'Selección de servicios' }}
+        options={{ title: 'Servicios' }}
       />
       <Stack.Screen 
         name="Routes" 
         component={RoutesScreen} 
-        options={{ title: 'Rutas' }}
+        options={{ title: 'Recorridos' }}
       />
       <Stack.Screen 
         name="FullMap" 
@@ -80,12 +81,19 @@ function MainTabNavigator() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#2E4BC6',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: '#89938B',
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '700',
+        },
         tabBarStyle: {
-          backgroundColor: '#fff',
+          height: 62,
+          paddingTop: 6,
+          paddingBottom: 6,
+          backgroundColor: COLORS.white,
           borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
+          borderTopColor: COLORS.border,
         },
         headerShown: false,
       })}

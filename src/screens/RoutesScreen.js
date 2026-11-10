@@ -1,95 +1,147 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
-  TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { busRoutes } from '../data/mockData';
+import { COLORS } from '../constants';
+
+const normalize = (value) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 export default function RoutesScreen({ navigation, route }) {
   const { division, serviceType } = route.params;
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredRoutes = busRoutes.filter(route =>
-    route.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    route.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRoutes = useMemo(() => {
+    const query = normalize(searchQuery.trim());
+    return busRoutes.filter((busRoute) => {
+      const matchesDivision =
+        !division || normalize(busRoute.division) === normalize(division.name);
+      const matchesDirection = !serviceType || busRoute.direction === serviceType.id;
+      const matchesQuery =
+        !query ||
+        normalize(busRoute.destination).includes(query) ||
+        normalize(busRoute.name).includes(query) ||
+        busRoute.id.includes(query);
+      return matchesDivision && matchesDirection && matchesQuery;
+    });
+  }, [division, searchQuery, serviceType]);
 
-  const RouteCard = ({ item }) => (
-    <TouchableOpacity 
+  const renderRoute = ({ item }) => (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`Ver mapa del recorrido ${item.name}, ${item.destination}`}
       style={styles.routeCard}
-      onPress={() => {
-        // Navegar al mapa completo con la ruta seleccionada
-        navigation.navigate('FullMap', { selectedRoute: item });
-      }}
+      onPress={() => navigation.navigate('FullMap', { selectedRoute: item })}
     >
-      <View style={styles.routeHeader}>
-        <View style={styles.busIconContainer}>
-          <Ionicons name="bus" size={32} color="#fff" />
+      <View style={styles.routeTopline}>
+        <View style={styles.routeNumber}>
+          <Ionicons name="bus" size={15} color={COLORS.white} />
+          <Text style={styles.routeNumberText}>{item.id}</Text>
         </View>
-        <View style={styles.routeInfo}>
-          <Text style={styles.routeTime}>{item.departureTime.slice(0, 5)} {item.destination}</Text>
-          <Text style={styles.scheduleText}>Hora salida: {item.departureTime}</Text>
-          <Text style={styles.scheduleText}>Hora llegada: {item.arrivalTime}</Text>
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusLabel}>ESTADO: </Text>
-            <Text style={[styles.statusValue, { color: '#4CAF50' }]}>{item.status}</Text>
+        <View style={styles.statusBadge}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>{item.status.replace('_', ' ')}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.destination}>{item.destination}</Text>
+      <View style={styles.originRow}>
+        <Ionicons name="navigate-outline" size={14} color={COLORS.textSecondary} />
+        <Text style={styles.originText} numberOfLines={1}>
+          Desde {item.origin}
+        </Text>
+      </View>
+
+      <View style={styles.cardDivider} />
+      <View style={styles.routeFooter}>
+        <View style={styles.timeGroup}>
+          <View>
+            <Text style={styles.timeLabel}>SALIDA</Text>
+            <Text style={styles.timeValue}>{item.departureTime.slice(0, 5)}</Text>
+          </View>
+          <Ionicons name="arrow-forward" size={15} color={COLORS.textLight} />
+          <View>
+            <Text style={styles.timeLabel}>LLEGADA</Text>
+            <Text style={styles.timeValue}>{item.arrivalTime.slice(0, 5)}</Text>
           </View>
         </View>
-        <TouchableOpacity 
-          style={styles.locationButton}
-          onPress={() => {
-            navigation.navigate('FullMap', { selectedRoute: item });
-          }}
-        >
-          <Ionicons name="location" size={24} color="#2E4BC6" />
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.routeDetails}>
-        <Text style={styles.originText}>Inicio: {item.origin}</Text>
-        <Text style={styles.busText}>Bus {item.name}</Text>
+        <View style={styles.mapAction}>
+          <Text style={styles.mapActionText}>Ver mapa</Text>
+          <Ionicons name="arrow-forward" size={15} color={COLORS.primary} />
+        </View>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2E4BC6" />
-      
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar ruta..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
-          />
-        </View>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      <View style={styles.heading}>
+        <Text style={styles.eyebrow}>RECORRIDOS · {division.name.toUpperCase()}</Text>
+        <Text style={styles.title}>Tu próximo viaje</Text>
+        <Text style={styles.subtitle}>{serviceType.name} · Horarios de referencia</Text>
       </View>
 
-      {/* Routes List */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={19} color={COLORS.primary} />
+        <TextInput
+          accessibilityLabel="Buscar por recorrido o destino"
+          style={styles.searchInput}
+          placeholder="Busca recorrido o destino"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor={COLORS.textLight}
+          returnKeyType="search"
+        />
+        {!!searchQuery && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Limpiar búsqueda"
+            onPress={() => setSearchQuery('')}
+          >
+            <Ionicons name="close-circle" size={19} color={COLORS.textLight} />
+          </TouchableOpacity>
+        )}
+      </View>
+
       <FlatList
         data={filteredRoutes}
-        renderItem={RouteCard}
+        renderItem={renderRoute}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          filteredRoutes.length > 0 ? (
+            <Text style={styles.resultCount}>
+              {filteredRoutes.length} {filteredRoutes.length === 1 ? 'recorrido' : 'recorridos'}
+            </Text>
+          ) : null
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="bus-outline" size={26} color={COLORS.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>No hay recorridos</Text>
+            <Text style={styles.emptyText}>
+              Prueba con otra búsqueda o selecciona un servicio diferente.
+            </Text>
+          </View>
+        }
       />
-
-      {/* Filter Button */}
-      <TouchableOpacity style={styles.filterButton}>
-        <Ionicons name="filter" size={24} color="#fff" />
-      </TouchableOpacity>
+      <View style={styles.disclaimer}>
+        <Ionicons name="information-circle-outline" size={15} color={COLORS.textSecondary} />
+        <Text style={styles.disclaimerText}>Horarios y recorridos de ejemplo.</Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -97,124 +149,199 @@ export default function RoutesScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.background,
+  },
+  heading: {
+    paddingHorizontal: 20,
+    paddingTop: 19,
+    paddingBottom: 13,
+  },
+  eyebrow: {
+    color: COLORS.secondary,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.9,
+  },
+  title: {
+    marginTop: 5,
+    color: COLORS.text,
+    fontSize: 25,
+    fontWeight: '800',
+  },
+  subtitle: {
+    marginTop: 4,
+    color: COLORS.textSecondary,
+    fontSize: 11,
   },
   searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  searchBar: {
+    height: 46,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-    height: 50,
-  },
-  searchIcon: {
-    marginRight: 10,
+    gap: 9,
+    marginHorizontal: 16,
+    marginBottom: 4,
+    paddingHorizontal: 13,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 13,
+    backgroundColor: COLORS.white,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
+    height: '100%',
+    color: COLORS.text,
+    fontSize: 13,
+    outlineStyle: 'none',
   },
   listContainer: {
-    padding: 16,
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  resultCount: {
+    marginBottom: 9,
+    color: COLORS.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
   },
   routeCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    marginBottom: 11,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 17,
+    backgroundColor: COLORS.white,
   },
-  routeHeader: {
+  routeTopline: {
     flexDirection: 'row',
-    padding: 16,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  busIconContainer: {
-    backgroundColor: '#2E4BC6',
-    borderRadius: 8,
-    padding: 12,
-    marginRight: 16,
-  },
-  routeInfo: {
-    flex: 1,
-  },
-  routeTime: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  scheduleText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
-  },
-  statusContainer: {
+  routeNumber: {
     flexDirection: 'row',
-    marginTop: 4,
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 9,
+    backgroundColor: COLORS.primary,
   },
-  statusLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
+  routeNumberText: {
+    color: COLORS.white,
+    fontSize: 11,
+    fontWeight: '800',
   },
-  statusValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 11,
+    backgroundColor: COLORS.primaryLight,
   },
-  locationButton: {
-    padding: 8,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 4,
+    backgroundColor: COLORS.success,
   },
-  routeDetails: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 12,
+  statusText: {
+    color: COLORS.primary,
+    fontSize: 8,
+    fontWeight: '800',
+  },
+  destination: {
+    marginTop: 12,
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  originRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 5,
   },
   originText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    flex: 1,
+    color: COLORS.textSecondary,
+    fontSize: 10,
   },
-  busText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2E4BC6',
+  cardDivider: {
+    height: 1,
+    marginTop: 12,
+    backgroundColor: COLORS.border,
   },
-  filterButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#2E4BC6',
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
+  routeFooter: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  timeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  timeLabel: {
+    color: COLORS.textLight,
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  timeValue: {
+    marginTop: 3,
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  mapAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  mapActionText: {
+    color: COLORS.primary,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingHorizontal: 30,
+    paddingTop: 60,
+  },
+  emptyIcon: {
+    width: 54,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: COLORS.primaryLight,
+  },
+  emptyTitle: {
+    marginTop: 12,
+    color: COLORS.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  emptyText: {
+    marginTop: 5,
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    lineHeight: 16,
+    textAlign: 'center',
+  },
+  disclaimer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 8,
+  },
+  disclaimerText: {
+    color: COLORS.textSecondary,
+    fontSize: 9,
   },
 });

@@ -3,6 +3,7 @@ import { Linking, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, V
 import { Ionicons } from '@expo/vector-icons';
 import { busStops } from '../data/mockData';
 import TransitMap from '../components/TransitMap';
+import { COLORS } from '../constants';
 
 export default function FullMapScreen({ route, navigation }) {
   const selectedRoute = route?.params?.selectedRoute ?? null;
@@ -28,7 +29,7 @@ export default function FullMapScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2E4BC6" />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} />
       <View style={styles.header}>
         <TouchableOpacity
           accessibilityRole="button"
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    backgroundColor: '#2E4BC6',
+    backgroundColor: COLORS.primaryDark,
   },
   backButton: {
     padding: 10,
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     borderRadius: 9,
-    backgroundColor: '#26734d',
+    backgroundColor: COLORS.primary,
   },
   directionsText: {
     color: '#fff',

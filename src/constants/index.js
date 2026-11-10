@@ -1,18 +1,20 @@
 // Constants for the GPSBus application
 
 export const COLORS = {
-  primary: '#2E4BC6',
-  primaryLight: '#f0f4ff',
-  secondary: '#FF9800',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#F44336',
-  background: '#f5f5f5',
+  primary: '#24543B',
+  primaryDark: '#183B2A',
+  primaryLight: '#E8F0E7',
+  accent: '#B8D66B',
+  secondary: '#D27A4B',
+  success: '#4E8B5D',
+  warning: '#D09A4A',
+  error: '#C45C4A',
+  background: '#F3F6F0',
   white: '#ffffff',
-  text: '#333333',
-  textSecondary: '#666666',
-  textLight: '#999999',
-  border: '#e0e0e0',
+  text: '#1D2B22',
+  textSecondary: '#66736A',
+  textLight: '#8D978F',
+  border: '#DDE5DB',
   shadow: '#000000',
 };
 

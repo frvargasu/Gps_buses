@@ -96,7 +96,7 @@ src/
 
 ## 🎨 Diseño
 
-La aplicación utiliza una paleta de colores azul (#2E4BC6) como color principal, siguiendo las mejores prácticas de Material Design para Android y Human Interface Guidelines para iOS.
+La aplicación utiliza una paleta de verde bosque, salvia y lima suave, con componentes adaptados para web, Android e iOS.
 
 ## 🔧 Configuración de Desarrollo
 
