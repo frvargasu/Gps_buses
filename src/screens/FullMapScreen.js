@@ -1,76 +1,82 @@
-import React from 'react';
-import {
-  View,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Linking, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MobileMapComponent from '../components/MobileMapComponent';
+import { busStops } from '../data/mockData';
+import TransitMap from '../components/TransitMap';
 
 export default function FullMapScreen({ route, navigation }) {
-  const selectedRoute = route?.params?.selectedRoute;
+  const selectedRoute = route?.params?.selectedRoute ?? null;
+  const [selectedStop, setSelectedStop] = useState(null);
+  const routeStops = useMemo(
+    () =>
+      selectedRoute
+        ? busStops.filter((stop) => stop.routes.includes(selectedRoute.id))
+        : busStops,
+    [selectedRoute],
+  );
+
+  const openDirections = async () => {
+    if (!selectedStop) return;
+    const destination = `${selectedStop.latitude},${selectedStop.longitude}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('No se pudo abrir el mapa', 'Intenta abrir las indicaciones desde tu navegador.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2E4BC6" />
-      
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {selectedRoute ? `Mapa - ${selectedRoute.name}` : 'Mapa GPS'}
-        </Text>
-        <TouchableOpacity 
-          style={styles.infoButton}
-          onPress={() => Alert.alert(
-            '🗺️ Mapa GPS',
-            'Mapa en tiempo real con tu ubicación actual\n\n📍 Toca las paradas para más información\n🧭 Usa los controles para navegar\n📱 Permite el GPS para mejor precisión'
-          )}
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-          <Ionicons name="information-circle" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-      </View>
-
-      {/* Información de ruta seleccionada */}
-      {selectedRoute && (
-        <View style={styles.routeInfo}>
-          <View style={styles.routeBadge}>
-            <Ionicons name="bus" size={20} color="#fff" />
-            <Text style={styles.routeText}>
-              {selectedRoute.name} - {selectedRoute.destination}
-            </Text>
-          </View>
-          <Text style={styles.routeDetails}>
-            🕐 {selectedRoute.departureTime} → {selectedRoute.arrivalTime} | 
-            📍 Desde: {selectedRoute.origin}
+        <View style={styles.headerInfo}>
+          <Text style={styles.headerTitle}>{selectedRoute ? selectedRoute.name : 'Mapa de paradas'}</Text>
+          <Text style={styles.headerSubtitle}>
+            {selectedRoute ? selectedRoute.destination : 'Santiago, Chile'} · OpenStreetMap
           </Text>
         </View>
-      )}
+      </View>
 
-      {/* Mapa simulado en pantalla completa */}
       <View style={styles.mapContainer}>
-        <MobileMapComponent 
+        <TransitMap
+          busStops={routeStops}
           selectedRoute={selectedRoute}
-          busStops={require('../data/mockData').busStops}
+          selectedStop={selectedStop}
+          onStopPress={setSelectedStop}
         />
       </View>
 
-      {/* Botón de ayuda flotante */}
-      <TouchableOpacity 
-        style={styles.helpButton}
-        onPress={() => Alert.alert(
-          '💡 Ayuda',
-          '🔹 Pellizca para hacer zoom\n🔹 Arrastra para mover el mapa\n🔹 Toca las paradas para información\n🔹 Usa el botón 📍 para centrarte\n🔹 El botón 🚌 centra en la ruta'
-        )}
-      >
-        <Ionicons name="help-circle" size={28} color="#fff" />
-      </TouchableOpacity>
+      {selectedStop ? (
+        <View style={styles.selectedStopPanel}>
+          <View style={styles.selectedStopText}>
+            <Text style={styles.stopName}>{selectedStop.name}</Text>
+            <Text style={styles.stopRoutes}>Recorridos: {selectedStop.routes.join(', ')}</Text>
+          </View>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`Indicaciones a ${selectedStop.name}`}
+            style={styles.directionsButton}
+            onPress={openDirections}
+          >
+            <Ionicons name="navigate" size={18} color="#fff" />
+            <Text style={styles.directionsText}>Cómo llegar</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text style={styles.helpText}>Toca una parada para verla y obtener indicaciones.</Text>
+      )}
+      <Text style={styles.attribution}>
+        © OpenStreetMap contributors · Recorrido aproximado entre paradas de ejemplo.
+      </Text>
     </SafeAreaView>
   );
 }
@@ -81,83 +87,82 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
+    minHeight: 66,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 12,
     backgroundColor: '#2E4BC6',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   backButton: {
-    padding: 8,
+    padding: 10,
+  },
+  headerInfo: {
+    flex: 1,
+    marginLeft: 8,
   },
   headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: 'bold',
     color: '#fff',
-    textAlign: 'center',
-    marginHorizontal: 10,
+    fontSize: 17,
+    fontWeight: '700',
   },
-  infoButton: {
-    padding: 8,
-  },
-  routeInfo: {
-    backgroundColor: '#fff',
-    padding: 12,
-    margin: 10,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  routeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2E4BC6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  routeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginLeft: 8,
-    fontSize: 14,
-  },
-  routeDetails: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 8,
+  headerSubtitle: {
+    marginTop: 2,
+    color: '#e1e6ff',
+    fontSize: 11,
   },
   mapContainer: {
     flex: 1,
-    margin: 10,
-    borderRadius: 15,
-    overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    minHeight: 260,
   },
-  helpButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    backgroundColor: '#2E4BC6',
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
+  selectedStopPanel: {
+    minHeight: 70,
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    justifyContent: 'space-between',
+    gap: 12,
+    margin: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+  },
+  selectedStopText: {
+    flex: 1,
+  },
+  stopName: {
+    color: '#25302a',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  stopRoutes: {
+    marginTop: 4,
+    color: '#666',
+    fontSize: 11,
+  },
+  directionsButton: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    borderRadius: 9,
+    backgroundColor: '#26734d',
+  },
+  directionsText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  helpText: {
+    padding: 14,
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  attribution: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    color: '#737b77',
+    fontSize: 9,
+    textAlign: 'center',
   },
 });

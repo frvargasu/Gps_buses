@@ -1,185 +1,201 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
   Alert,
-  Text,
-  TouchableOpacity,
+  Linking,
   Platform,
+  SafeAreaView,
   ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { busStops } from '../data/mockData';
-import MobileMapComponent from '../components/MobileMapComponent';
-import WebMapComponent from '../components/WebMapComponent';
+import TransitMap from '../components/TransitMap';
+
+const normalizeSearchText = (value) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 export default function MapScreen({ route }) {
-  const [selectedRoute, setSelectedRoute] = useState(route?.params?.selectedRoute);
-  const [location, setLocation] = useState(null);
-  const [region, setRegion] = useState({
-    latitude: -33.4489,
-    longitude: -70.6693,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
+  const [selectedRoute, setSelectedRoute] = useState(route?.params?.selectedRoute ?? null);
+  const [selectedStop, setSelectedStop] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Detectar cuando se reciben nuevos parámetros de navegación
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       if (route?.params?.selectedRoute) {
         setSelectedRoute(route.params.selectedRoute);
+        setSelectedStop(null);
       }
-    }, [route?.params?.selectedRoute])
+    }, [route?.params?.selectedRoute]),
   );
 
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      getLocationPermission();
-    }
-  }, []);
+  const visibleStops = useMemo(() => {
+    const query = normalizeSearchText(searchQuery.trim());
+    const routeStops = busStops.filter(
+      (stop) => !selectedRoute || stop.routes.includes(selectedRoute.id),
+    );
+    return routeStops.filter((stop) => {
+      const matchesQuery =
+        !query ||
+        normalizeSearchText(stop.name).includes(query) ||
+        stop.routes.some((routeId) => normalizeSearchText(routeId).includes(query));
+      return matchesQuery;
+    });
+  }, [searchQuery, selectedRoute]);
+  const routeStops = useMemo(
+    () => busStops.filter((stop) => !selectedRoute || stop.routes.includes(selectedRoute.id)),
+    [selectedRoute],
+  );
 
-  const getLocationPermission = async () => {
-    if (Platform.OS === 'web') return;
-    
+  const handleOpenDirections = async (stop) => {
+    const destination = `${stop.latitude},${stop.longitude}`;
+    const url = Platform.select({
+      ios: `https://maps.apple.com/?daddr=${destination}`,
+      default: `https://www.google.com/maps/dir/?api=1&destination=${destination}`,
+    });
+
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permisos requeridos',
-          'Se necesitan permisos de ubicación para mostrar tu posición en el mapa.'
-        );
-        return;
-      }
-
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-      setRegion({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
-    } catch (error) {
-      console.error('Error getting location:', error);
-    }
-  };
-
-  const centerOnUser = () => {
-    if (location) {
-      setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('No se pudo abrir el mapa', 'Intenta abrir las indicaciones desde tu navegador.');
     }
   };
 
   const clearSelectedRoute = () => {
     setSelectedRoute(null);
+    setSelectedStop(null);
   };
-
-  // Web version with simple map representation
-  if (Platform.OS === 'web') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        
-        {/* Header */}
-        <View style={styles.webHeader}>
-          <Ionicons name="map" size={32} color="#2E4BC6" />
-          <Text style={styles.webHeaderTitle}>Mapa de Paradas</Text>
-        </View>
-
-        {/* Map Area with Santiago representation */}
-        <View style={styles.webMapArea}>
-          <View style={styles.cityMap}>
-            <Text style={styles.cityName}>Santiago, Chile</Text>
-            
-            {/* Simulate map zones */}
-            <View style={styles.mapZones}>
-              <View style={styles.zone}>
-                <Text style={styles.zoneName}>Centro</Text>
-                <View style={styles.stopsInZone}>
-                  {busStops.filter(stop => stop.name.includes('Santiago') || stop.name.includes('Central')).map(stop => (
-                    <TouchableOpacity key={stop.id} style={styles.webStopMarker}>
-                      <Ionicons name="bus" size={16} color="#fff" />
-                      <Text style={styles.stopLabel}>{stop.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              
-              <View style={styles.zone}>
-                <Text style={styles.zoneName}>Sur</Text>
-                <View style={styles.stopsInZone}>
-                  {busStops.filter(stop => stop.name.includes('San Bernardo')).map(stop => (
-                    <TouchableOpacity key={stop.id} style={styles.webStopMarker}>
-                      <Ionicons name="bus" size={16} color="#fff" />
-                      <Text style={styles.stopLabel}>{stop.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              
-              <View style={styles.zone}>
-                <Text style={styles.zoneName}>Oeste</Text>
-                <View style={styles.stopsInZone}>
-                  {busStops.filter(stop => stop.name.includes('Pudahuel')).map(stop => (
-                    <TouchableOpacity key={stop.id} style={styles.webStopMarker}>
-                      <Ionicons name="bus" size={16} color="#fff" />
-                      <Text style={styles.stopLabel}>{stop.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Bus Stops List */}
-        <ScrollView style={styles.stopsListWeb}>
-          <Text style={styles.stopsTitle}>Todas las Paradas:</Text>
-          {busStops.map((stop) => (
-            <TouchableOpacity key={stop.id} style={styles.stopItemWeb}>
-              <View style={styles.busStopMarker}>
-                <Ionicons name="bus" size={16} color="#fff" />
-              </View>
-              <View style={styles.stopInfoWeb}>
-                <Text style={styles.stopNameWeb}>{stop.name}</Text>
-                <Text style={styles.stopRoutesWeb}>
-                  Rutas: {stop.routes.join(', ')}
-                </Text>
-                <Text style={styles.coordinatesWeb}>
-                  {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#ccc" />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Web Note */}
-        <View style={styles.webNote}>
-          <Text style={styles.webNoteText}>
-            💡 Para ver el mapa interactivo completo, descarga la app móvil
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      <MobileMapComponent 
-        busStops={busStops} 
-        selectedRoute={selectedRoute}
-      />
+      <StatusBar barStyle="dark-content" backgroundColor="#f7f8fa" />
+
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.eyebrow}>GPS BUS · SANTIAGO</Text>
+          <Text style={styles.title}>Mapa de paradas</Text>
+        </View>
+        <View style={styles.openStreetMapBadge}>
+          <Ionicons name="leaf-outline" size={16} color="#26734d" />
+          <Text style={styles.openStreetMapText}>OpenStreetMap</Text>
+        </View>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#6b7280" />
+        <TextInput
+          accessibilityLabel="Buscar paradas o recorridos"
+          style={styles.searchInput}
+          placeholder="Buscar parada o recorrido"
+          placeholderTextColor="#8b9099"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          returnKeyType="search"
+        />
+        {!!searchQuery && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Limpiar búsqueda"
+            onPress={() => setSearchQuery('')}
+          >
+            <Ionicons name="close-circle" size={20} color="#8b9099" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {selectedRoute && (
+        <View style={styles.routeBanner}>
+          <Ionicons name="bus" size={18} color="#fff" />
+          <Text style={styles.routeBannerText} numberOfLines={1}>
+            {selectedRoute.name} · {selectedRoute.destination}
+          </Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Quitar filtro de recorrido"
+            onPress={clearSelectedRoute}
+            style={styles.clearRouteButton}
+          >
+            <Ionicons name="close" size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.mapContainer}>
+        <TransitMap
+          busStops={visibleStops}
+          routeStops={routeStops}
+          selectedRoute={selectedRoute}
+          selectedStop={selectedStop}
+          onStopPress={setSelectedStop}
+        />
+      </View>
+
+      <View style={styles.listHeader}>
+        <View>
+          <Text style={styles.listTitle}>
+            {selectedRoute ? 'Paradas del recorrido' : 'Paradas disponibles'}
+          </Text>
+          <Text style={styles.listSubtitle}>
+            {visibleStops.length} {visibleStops.length === 1 ? 'parada' : 'paradas'}
+          </Text>
+        </View>
+        <Text style={styles.approximateNote}>Ubicaciones de ejemplo</Text>
+      </View>
+
+      <ScrollView
+        style={styles.stopsList}
+        contentContainerStyle={styles.stopsListContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {visibleStops.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="search-outline" size={24} color="#8b9099" />
+            <Text style={styles.emptyStateText}>No encontramos paradas con esa búsqueda.</Text>
+          </View>
+        ) : (
+          visibleStops.map((stop) => {
+            const isSelected = selectedStop?.id === stop.id;
+            return (
+              <View key={stop.id} style={[styles.stopCard, isSelected && styles.selectedStopCard]}>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Mostrar ${stop.name} en el mapa`}
+                  style={styles.stopMain}
+                  onPress={() => setSelectedStop(stop)}
+                >
+                  <View style={styles.stopIcon}>
+                    <Ionicons name="bus" size={18} color="#26734d" />
+                  </View>
+                  <View style={styles.stopInfo}>
+                    <Text style={styles.stopName}>{stop.name}</Text>
+                    <Text style={styles.stopRoutes}>Recorridos: {stop.routes.join(', ')}</Text>
+                    <Text style={styles.stopCoordinates}>
+                      {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Indicaciones a ${stop.name}`}
+                  style={styles.directionsButton}
+                  onPress={() => handleOpenDirections(stop)}
+                >
+                  <Ionicons name="navigate-outline" size={19} color="#26734d" />
+                </TouchableOpacity>
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
+
+      <Text style={styles.attribution}>
+        © OpenStreetMap contributors · El trazado conecta las paradas de ejemplo.
+      </Text>
     </SafeAreaView>
   );
 }
@@ -187,208 +203,196 @@ export default function MapScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f7f8fa',
   },
-  map: {
-    flex: 1,
-  },
-  // Web-specific styles
-  webHeader: {
+  header: {
+    minHeight: 68,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    gap: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
   },
-  webHeaderTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  webMapArea: {
-    backgroundColor: '#fff',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cityMap: {
-    alignItems: 'center',
-  },
-  cityName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E4BC6',
-    marginBottom: 16,
-  },
-  mapZones: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  zone: {
-    backgroundColor: '#f0f4ff',
-    borderRadius: 8,
-    padding: 12,
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  zoneName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2E4BC6',
-    marginBottom: 8,
-  },
-  stopsInZone: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  webStopMarker: {
-    backgroundColor: '#2E4BC6',
-    borderRadius: 15,
-    padding: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginVertical: 2,
-  },
-  stopLabel: {
+  eyebrow: {
+    color: '#26734d',
     fontSize: 10,
-    color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: 1,
   },
-  stopsListWeb: {
-    flex: 1,
-    backgroundColor: '#fff',
+  title: {
+    marginTop: 3,
+    color: '#17231d',
+    fontSize: 21,
+    fontWeight: '700',
+  },
+  openStreetMapBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: '#e5f1e9',
+  },
+  openStreetMapText: {
+    color: '#26734d',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  searchContainer: {
+    height: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e0e4e8',
     borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#fff',
   },
-  stopsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  stopItemWeb: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  stopInfoWeb: {
+  searchInput: {
     flex: 1,
-    marginLeft: 12,
-  },
-  stopNameWeb: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  stopRoutesWeb: {
+    height: '100%',
+    color: '#17231d',
     fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+    outlineStyle: 'none',
   },
-  coordinatesWeb: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 2,
-  },
-  webNote: {
-    backgroundColor: '#e3f2fd',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2E4BC6',
-  },
-  webNoteText: {
-    fontSize: 14,
-    color: '#1976d2',
-    fontStyle: 'italic',
-  },
-  // Mobile styles (existing)
-  controls: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    transform: [{ translateY: -75 }],
-  },
-  controlButton: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  legend: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  legendItem: {
+  routeBanner: {
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 9,
+    paddingLeft: 12,
+    borderRadius: 9,
+    backgroundColor: '#26734d',
   },
-  legendText: {
-    marginLeft: 8,
+  routeBannerText: {
+    flex: 1,
+    color: '#fff',
     fontSize: 12,
-    color: '#333',
+    fontWeight: '600',
   },
-  busStopMarker: {
-    backgroundColor: '#2E4BC6',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
+  clearRouteButton: {
+    padding: 9,
+  },
+  mapContainer: {
+    flex: 1,
+    minHeight: 250,
+    marginHorizontal: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#dce2dc',
+    borderRadius: 14,
+    backgroundColor: '#e8eee8',
+  },
+  listHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingTop: 13,
+    paddingBottom: 8,
+  },
+  listTitle: {
+    color: '#17231d',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  listSubtitle: {
+    marginTop: 2,
+    color: '#737b77',
+    fontSize: 11,
+  },
+  approximateNote: {
+    color: '#737b77',
+    fontSize: 10,
+  },
+  stopsList: {
+    flex: 0.8,
+    minHeight: 120,
+  },
+  stopsListContent: {
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  stopCard: {
+    minHeight: 70,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e8e5',
+    borderRadius: 11,
+    backgroundColor: '#fff',
+  },
+  selectedStopCard: {
+    borderColor: '#26734d',
+    backgroundColor: '#f3f8f4',
+  },
+  stopMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  stopIcon: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    borderRadius: 10,
+    backgroundColor: '#e5f1e9',
+  },
+  stopInfo: {
+    flex: 1,
+  },
+  stopName: {
+    color: '#17231d',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stopRoutes: {
+    marginTop: 2,
+    color: '#59645d',
+    fontSize: 11,
+  },
+  stopCoordinates: {
+    marginTop: 2,
+    color: '#8b9099',
+    fontSize: 10,
+  },
+  directionsButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    marginRight: 8,
+    borderRadius: 12,
+    backgroundColor: '#e5f1e9',
+  },
+  emptyState: {
+    minHeight: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 9,
+    paddingHorizontal: 18,
+  },
+  emptyStateText: {
+    color: '#737b77',
+    fontSize: 12,
+  },
+  attribution: {
+    paddingHorizontal: 16,
+    paddingTop: 5,
+    paddingBottom: 7,
+    color: '#737b77',
+    fontSize: 9,
+    textAlign: 'center',
   },
 });

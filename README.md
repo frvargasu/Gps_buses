@@ -5,9 +5,10 @@ Una aplicación híbrida de transporte público, desarrollada con React Native y
 ## 🚀 Características
 
 - **Múltiples plataformas**: Web, Android e iOS
-- **Información de rutas**: Horarios, destinos y estado en tiempo real
-- **Mapas integrados**: Visualización de paradas de autobús y rutas
-- **Búsqueda**: Encuentra rutas y paradas fácilmente
+- **Información de rutas**: Horarios, destinos y estado de ejemplo
+- **Mapas integrados**: Mapas OpenStreetMap interactivos en web, Android e iOS
+- **Búsqueda**: Filtra paradas por nombre o número de recorrido
+- **Indicaciones**: Abre una parada en la aplicación de mapas del dispositivo
 - **Divisiones de servicio**: Turno y Administrativo
 - **Direcciones de viaje**: Hacia y desde ubicaciones específicas
 - **Interfaz intuitiva**: Diseño limpio inspirado en aplicaciones modernas de transporte
@@ -16,7 +17,8 @@ Una aplicación híbrida de transporte público, desarrollada con React Native y
 
 - **React Native** con Expo
 - **React Navigation** para navegación
-- **React Native Maps** para mapas
+- **OpenStreetMap** mediante Leaflet en web y mosaicos OSM en móvil
+- **React Native Maps** para la vista nativa del mapa
 - **Expo Location** para geolocalización
 - **Expo Vector Icons** para iconografía
 - **JavaScript/ES6+**
@@ -28,7 +30,7 @@ Una aplicación híbrida de transporte público, desarrollada con React Native y
 3. **Tipo de Servicio**: Viajes hacia o desde ubicaciones
 4. **Rutas**: Lista de rutas con horarios y información detallada
 5. **Mapa**: Visualización interactiva de paradas de autobús
-6. **Paradas**: Lista de todas las paradas disponibles
+6. **Paradas**: Lista de paradas disponibles
 
 ## 🚀 Instalación y Configuración
 
@@ -104,11 +106,18 @@ Se recomienda instalar las siguientes extensiones:
 - ES7+ React/Redux/React-Native snippets
 - Prettier - Code formatter
 
-### Configuración de Mapas
+### Mapas OpenStreetMap
 
-Para usar mapas en dispositivos físicos, necesitarás configurar:
-- **Android**: Google Maps API Key
-- **iOS**: Apple Maps (incluido por defecto)
+El mapa no requiere API key. La aplicación muestra los datos de paradas que están
+en `src/data/mockData.js`; por ahora son datos de ejemplo. La línea del recorrido
+conecta esas paradas en el orden del archivo y no representa el trazado oficial
+por calles ni la ubicación de buses en tiempo real. Las indicaciones se abren en
+la aplicación de mapas del dispositivo.
+
+Se muestra la atribución requerida a OpenStreetMap. El servidor público de
+mosaicos de OSM está sujeto a una política de uso y no ofrece garantía de
+disponibilidad; para un despliegue con tráfico se debe contratar o configurar un
+proveedor de mosaicos adecuado.
 
 ## 📝 Scripts Disponibles
 
@@ -119,7 +128,8 @@ Para usar mapas en dispositivos físicos, necesitarás configurar:
 
 ## 🔜 Características Futuras
 
-- [ ] Integración con APIs reales de transporte público
+- [ ] Integración con datos reales de rutas y paradas
+- [ ] Posiciones de buses en tiempo real mediante una API del operador o GTFS-Realtime
 - [ ] Notificaciones push para alertas de rutas
 - [ ] Modo offline para información básica
 - [ ] Estimaciones de tiempo en tiempo real
@@ -135,4 +145,3 @@ Las contribuciones son bienvenidas. Para cambios importantes, por favor abre un 
 
 
 ---
-
